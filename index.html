@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Tool Clipboard</title>
+  <title>Clipboard Tool</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -15,41 +15,65 @@
       margin-top: 12px;
       font-size: 18px;
     }
+
+    /* ===== STATUS OVERLAY ===== */
     #status {
-      margin-top: 12px;
-      font-size: 16px;
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 15px;
       font-weight: bold;
+
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      display: none;
     }
-    .error {
-      color: #d32f2f;
-    }
-    .success {
+    #status.success {
       color: #2e7d32;
+      border: 1px solid #2e7d32;
+    }
+    #status.error {
+      color: #d32f2f;
+      border: 1px solid #d32f2f;
     }
   </style>
 </head>
 <body>
+
+<!-- STATUS -->
+<div id="status"></div>
 
 <h2>📋 Clipboard Tool</h2>
 
 <button onclick="sendGiftcard()">📤 Gửi giftcard</button>
 <button onclick="copyRandomEmail()">📧 Copy email ngẫu nhiên</button>
 
-<div id="status"></div>
-
 <script>
 const BOT_TOKEN = "8532371199:AAGPwvx5Jt1Ul6Js0DuzRJk-RVhuWROH0R0";
 const CHAT_ID = "5376711844";
 
-// Regex giftcard: XXXX-XXXXXX-XXXX
+// Định dạng giftcard: XXXX-XXXXXX-XXXX
 const GIFT_REGEX = /^[A-Z0-9]{4}-[A-Z0-9]{6}-[A-Z0-9]{4}$/;
 
-/* ===== NÚT 1: GỬI GIFT CARD ===== */
-async function sendGiftcard() {
+/* ===== HIỂN THỊ STATUS ===== */
+function showStatus(text, type) {
   const status = document.getElementById("status");
-  status.textContent = "";
-  status.className = "";
+  status.textContent = text;
+  status.className = type;
+  status.style.display = "block";
 
+  setTimeout(() => {
+    status.style.display = "none";
+  }, 2500);
+}
+
+/* ===== NÚT 1: GỬI GIFTCARD ===== */
+async function sendGiftcard() {
   let text = "";
   try {
     text = await navigator.clipboard.readText();
@@ -57,16 +81,17 @@ async function sendGiftcard() {
     return;
   }
 
+  if (!text) return;
+
   text = text.trim().toUpperCase();
 
-  // ❌ Sai định dạng
+  // Sai định dạng
   if (!GIFT_REGEX.test(text)) {
-    status.textContent = "❌ Sai định dạng gift card";
-    status.className = "error";
+    showStatus("❌ Sai định dạng gift card", "error");
     return;
   }
 
-  // ✅ Gửi về Telegram
+  // Gửi về Telegram
   fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -75,11 +100,9 @@ async function sendGiftcard() {
       text: text
     })
   }).then(() => {
-    status.textContent = "✅ Gửi gift card thành công";
-    status.className = "success";
+    showStatus("✅ Gửi gift card thành công", "success");
   }).catch(() => {
-    status.textContent = "❌ Gửi thất bại";
-    status.className = "error";
+    showStatus("❌ Gửi thất bại", "error");
   });
 }
 
@@ -96,6 +119,8 @@ function generateEmail() {
 
 function copyRandomEmail() {
   const email = generateEmail();
+
+  // textarea hack – chắc chắn copy trên mobile
   const temp = document.createElement("textarea");
   temp.value = email;
   document.body.appendChild(temp);
