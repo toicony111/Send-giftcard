@@ -27,12 +27,12 @@
       cursor: not-allowed;
     }
 
-    /* MESSAGE */
+    /* THÔNG BÁO */
     #giftStatus {
-      display: none;
       margin-bottom: 8px;
       font-size: 15px;
       font-weight: bold;
+      display: none;
     }
 
     #giftStatus.error {
@@ -48,7 +48,7 @@
 
 <h2>📋 Clipboard Tool</h2>
 
-<!-- MESSAGE TRÊN NÚT -->
+<!-- THÔNG BÁO NẰM TRÊN NÚT -->
 <div id="giftStatus"></div>
 
 <button id="giftBtn" onclick="sendGiftcard()">📤 Gửi giftcard</button>
@@ -75,7 +75,6 @@ function showGiftStatus(text, type) {
 /* ===== GỬI GIFTCARD ===== */
 async function sendGiftcard() {
   disableButtons(true);
-  document.getElementById("giftStatus").style.display = "none";
 
   let text = "";
   try {
@@ -110,7 +109,7 @@ async function sendGiftcard() {
   })
   .then(() => {
     showGiftStatus("✅ Gửi gift card thành công", "success");
-    // KHÔNG bật lại nút khi thành công
+    // giữ disable vĩnh viễn khi success
   })
   .catch(() => {
     showGiftStatus("❌ Gửi thất bại", "error");
@@ -135,7 +134,6 @@ function copyRandomEmail() {
   temp.value = email;
   document.body.appendChild(temp);
   temp.select();
-  temp.setSelectionRange(0, 99999);
   document.execCommand("copy");
   document.body.removeChild(temp);
 }
