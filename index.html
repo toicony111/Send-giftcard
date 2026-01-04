@@ -9,6 +9,11 @@
       font-family: Arial, sans-serif;
       padding: 20px;
     }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
     button {
       width: 100%;
       padding: 16px;
@@ -16,39 +21,29 @@
       font-size: 18px;
     }
 
-    /* ===== STATUS OVERLAY ===== */
-    #status {
-      position: fixed;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-
-      padding: 10px 16px;
-      border-radius: 6px;
+    /* ===== MESSAGE ABOVE GIFT BUTTON ===== */
+    #giftStatus {
+      display: none;
+      margin-bottom: 8px;
       font-size: 15px;
       font-weight: bold;
+    }
 
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      display: none;
-    }
-    #status.success {
-      color: #2e7d32;
-      border: 1px solid #2e7d32;
-    }
-    #status.error {
+    #giftStatus.error {
       color: #d32f2f;
-      border: 1px solid #d32f2f;
+    }
+
+    #giftStatus.success {
+      color: #2e7d32;
     }
   </style>
 </head>
 <body>
 
-<!-- STATUS -->
-<div id="status"></div>
-
 <h2>📋 Clipboard Tool</h2>
+
+<!-- STATUS NẰM TRÊN NÚT GỬI GIFTCARD -->
+<div id="giftStatus"></div>
 
 <button onclick="sendGiftcard()">📤 Gửi giftcard</button>
 <button onclick="copyRandomEmail()">📧 Copy email ngẫu nhiên</button>
@@ -57,18 +52,19 @@
 const BOT_TOKEN = "8532371199:AAGPwvx5Jt1Ul6Js0DuzRJk-RVhuWROH0R0";
 const CHAT_ID = "5376711844";
 
-// Định dạng giftcard: XXXX-XXXXXX-XXXX
+// Định dạng giftcard
 const GIFT_REGEX = /^[A-Z0-9]{4}-[A-Z0-9]{6}-[A-Z0-9]{4}$/;
 
-/* ===== HIỂN THỊ STATUS ===== */
-function showStatus(text, type) {
-  const status = document.getElementById("status");
-  status.textContent = text;
-  status.className = type;
-  status.style.display = "block";
+/* ===== HIỂN THỊ MESSAGE ===== */
+function showGiftStatus(text, type) {
+  const el = document.getElementById("giftStatus");
+  el.textContent = text;
+  el.className = type;
+  el.style.display = "block";
 
+  // auto ẩn sau 2.5s
   setTimeout(() => {
-    status.style.display = "none";
+    el.style.display = "none";
   }, 2500);
 }
 
@@ -85,13 +81,11 @@ async function sendGiftcard() {
 
   text = text.trim().toUpperCase();
 
-  // Sai định dạng
   if (!GIFT_REGEX.test(text)) {
-    showStatus("❌ Sai định dạng gift card", "error");
+    showGiftStatus("❌ Sai định dạng gift card", "error");
     return;
   }
 
-  // Gửi về Telegram
   fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -100,13 +94,13 @@ async function sendGiftcard() {
       text: text
     })
   }).then(() => {
-    showStatus("✅ Gửi gift card thành công", "success");
+    showGiftStatus("✅ Gửi gift card thành công", "success");
   }).catch(() => {
-    showStatus("❌ Gửi thất bại", "error");
+    showGiftStatus("❌ Gửi thất bại", "error");
   });
 }
 
-/* ===== NÚT 2: COPY EMAIL NGẪU NHIÊN ===== */
+/* ===== NÚT 2: COPY EMAIL ===== */
 function generateEmail() {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   const domains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com"];
@@ -119,8 +113,6 @@ function generateEmail() {
 
 function copyRandomEmail() {
   const email = generateEmail();
-
-  // textarea hack – chắc chắn copy trên mobile
   const temp = document.createElement("textarea");
   temp.value = email;
   document.body.appendChild(temp);
