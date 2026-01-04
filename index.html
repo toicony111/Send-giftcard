@@ -19,9 +19,15 @@
       padding: 16px;
       margin-top: 12px;
       font-size: 18px;
+      cursor: pointer;
     }
 
-    /* ===== MESSAGE ABOVE GIFT BUTTON ===== */
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* MESSAGE */
     #giftStatus {
       display: none;
       margin-bottom: 8px;
@@ -42,47 +48,55 @@
 
 <h2>📋 Clipboard Tool</h2>
 
-<!-- STATUS NẰM TRÊN NÚT GỬI GIFTCARD -->
+<!-- MESSAGE TRÊN NÚT -->
 <div id="giftStatus"></div>
 
-<button onclick="sendGiftcard()">📤 Gửi giftcard</button>
-<button onclick="copyRandomEmail()">📧 Copy email ngẫu nhiên</button>
+<button id="giftBtn" onclick="sendGiftcard()">📤 Gửi giftcard</button>
+<button id="emailBtn" onclick="copyRandomEmail()">📧 Copy email ngẫu nhiên</button>
 
 <script>
 const BOT_TOKEN = "8532371199:AAGPwvx5Jt1Ul6Js0DuzRJk-RVhuWROH0R0";
 const CHAT_ID = "5376711844";
 
-// Định dạng giftcard
 const GIFT_REGEX = /^[A-Z0-9]{4}-[A-Z0-9]{6}-[A-Z0-9]{4}$/;
 
-/* ===== HIỂN THỊ MESSAGE ===== */
+function disableButtons(state) {
+  document.getElementById("giftBtn").disabled = state;
+  document.getElementById("emailBtn").disabled = state;
+}
+
 function showGiftStatus(text, type) {
   const el = document.getElementById("giftStatus");
   el.textContent = text;
   el.className = type;
   el.style.display = "block";
-
-  // auto ẩn sau 2.5s
-  setTimeout(() => {
-    el.style.display = "none";
-  }, 2500);
 }
 
-/* ===== NÚT 1: GỬI GIFTCARD ===== */
+/* ===== GỬI GIFTCARD ===== */
 async function sendGiftcard() {
+  disableButtons(true);
+  document.getElementById("giftStatus").style.display = "none";
+
   let text = "";
   try {
     text = await navigator.clipboard.readText();
   } catch (e) {
+    showGiftStatus("❌ Không đọc được clipboard", "error");
+    disableButtons(false);
     return;
   }
 
-  if (!text) return;
+  if (!text) {
+    showGiftStatus("❌ Clipboard trống", "error");
+    disableButtons(false);
+    return;
+  }
 
   text = text.trim().toUpperCase();
 
   if (!GIFT_REGEX.test(text)) {
     showGiftStatus("❌ Sai định dạng gift card", "error");
+    disableButtons(false);
     return;
   }
 
@@ -93,14 +107,18 @@ async function sendGiftcard() {
       chat_id: CHAT_ID,
       text: text
     })
-  }).then(() => {
+  })
+  .then(() => {
     showGiftStatus("✅ Gửi gift card thành công", "success");
-  }).catch(() => {
+    // KHÔNG bật lại nút khi thành công
+  })
+  .catch(() => {
     showGiftStatus("❌ Gửi thất bại", "error");
+    disableButtons(false);
   });
 }
 
-/* ===== NÚT 2: COPY EMAIL ===== */
+/* ===== COPY EMAIL ===== */
 function generateEmail() {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   const domains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com"];
